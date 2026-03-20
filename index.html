@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'Odyssée de l'IA — Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Bubblegum+Sans&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fef9ef;
+    --surface: #ffffff;
+    --surface2: #fff5dc;
+    --border: #d4a843;
+    --accent: #e05a2b;
+    --accent2: #2b7be0;
+    --green: #2db87a;
+    --red: #e03a2b;
+    --gold: #f0a500;
+    --text: #2a1f0e;
+    --muted: #8a7055;
+    --card-w: 110px;
+    --card-h: 155px;
+    --hand-card-w: 160px;
+    --hand-card-h: 225px;
+    --radius: 10px;
+    --font-main: 'Patrick Hand', 'Comic Sans MS', cursive;
+    --font-title: 'Bubblegum Sans', 'Comic Sans MS', cursive;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(240,165,0,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(44,123,224,0.06) 0%, transparent 40%);
+    color: var(--text);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #1a3a6e, #2b5bb8);
+    padding: 16px 20px 12px;
+    text-align: center;
+    border-bottom: 4px solid var(--gold);
+    position: relative;
+  }
+  header h1 {
+    font-family: var(--font-title);
+    font-size: clamp(1.5rem, 5vw, 2.4rem);
+    color: #fff;
+    text-shadow: 2px 3px 0 rgba(0,0,0,0.3);
+    letter-spacing: 0.02em;
+  }
+  header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.82rem;
+    margin-top: 3px;
+  }
+  .isfec-badge {
+    position: absolute;
+    top: 10px; right: 14px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ── SCORE BAR ── */
+  #scorebar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 4px 14px;
+    min-width: 70px;
+  }
+  .stat-val {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red   { color: var(--red); }
+  .stat-lbl {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1px;
+  }
+  .btn-restart {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 3px solid #a03310;
+    transition: all 0.15s;
+  }
+  .btn-restart:hover { transform: translateY(-2px); background: #f06030; }
+  .btn-restart:active { transform: translateY(1px); border-bottom-width: 1px; }
+
+  /* ── INSTRUCTION ── */
+  #instruction-bar {
+    background: #1a3a6e;
+    color: #fff;
+    text-align: center;
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    font-family: var(--font-main);
+    min-height: 34px;
+    border-bottom: 2px solid var(--gold);
+  }
+  #instruction-bar.good { background: var(--green); }
+  #instruction-bar.bad  { background: var(--red); }
+
+  /* ── TIMELINE ZONE ── */
+  #timeline-section {
+    padding: 12px 0 8px;
+    background: linear-gradient(180deg, #e8f4ff 0%, #f5edda 100%);
+    border-bottom: 2px dashed var(--border);
+    position: relative;
+  }
+  .tl-label {
+    text-align: center;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  #timeline-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-height: calc(var(--card-h) + 24px);
+    padding: 8px 16px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  #timeline-row::-webkit-scrollbar { height: 5px; }
+  #timeline-row::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 3px; }
+  #timeline-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Timeline line */
+  #tl-line {
+    position: absolute;
+    left: 0; right: 0;
+    top: calc(50% + 10px);
+    height: 3px;
+    background: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 8px, transparent 8px, transparent 16px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── DROP ZONES ── */
+  .drop-zone {
+    width: 24px;
+    min-width: 24px;
+    height: calc(var(--card-h) + 10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: width 0.18s, background 0.18s;
+    border-radius: 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .drop-zone::before {
+    content: '|';
+    font-size: 1.8rem;
+    color: rgba(180,130,50,0.25);
+    font-weight: 900;
+    transition: color 0.18s, font-size 0.18s;
+  }
+  .drop-zone.active-zones::before { color: rgba(44,123,224,0.4); }
+  .drop-zone.active-zones:hover {
+    width: 44px;
+    background: rgba(44,123,224,0.1);
+    border: 2px dashed var(--accent2);
+  }
+  .drop-zone.active-zones:hover::before {
+    color: var(--accent2);
+    font-size: 2.2rem;
+  }
+
+  /* ── CARD ── */
+  .card {
+    width: var(--card-w);
+    min-width: var(--card-w);
+    height: var(--card-h);
+    position: relative;
+    perspective: 700px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    border-radius: var(--radius);
+  }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 3px solid #1a3a6e;
+    box-shadow: 3px 4px 0 rgba(0,0,0,0.18);
+  }
+
+  /* FRONT: image + title */
+  .card-front {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-img {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f4f8;
+  }
+  .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-title-bar {
+    background: #1a3a6e;
+    padding: 5px 6px 6px;
+    text-align: center;
+  }
+  .card-name {
+    font-family: var(--font-title);
+    font-size: 0.62rem;
+    color: #fff;
+    line-height: 1.2;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+  }
+  .card-desc {
+    font-size: 0.5rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 2px;
+    font-style: italic;
+    line-height: 1.2;
+  }
+
+  /* BACK: date */
+  .card-back {
+    background: linear-gradient(160deg, #fffde7, #fff9c4);
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-color: var(--gold);
+  }
+  .card-year {
+    font-family: var(--font-title);
+    font-size: 2.4rem;
+    color: var(--accent);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+    line-height: 1;
+  }
+  .card-back-name {
+    font-family: var(--font-main);
+    font-size: 0.6rem;
+    font-weight: bold;
+    color: #1a3a6e;
+    text-align: center;
+    padding: 0 8px;
+    line-height: 1.3;
+  }
+  .card-back-star { font-size: 1.1rem; }
+
+  /* In-hand cards — bigger */
+  .card.in-hand {
+    width: var(--hand-card-w);
+    min-width: var(--hand-card-w);
+    height: var(--hand-card-h);
+    cursor: pointer;
+    transition: transform 0.18s;
+  }
+  .card.in-hand .card-name  { font-size: 0.82rem !important; }
+  .card.in-hand .card-desc  { font-size: 0.65rem !important; }
+  .card.in-hand:hover { transform: translateY(-8px); }
+  .card.in-hand:hover .card-face { box-shadow: 3px 10px 0 rgba(0,0,0,0.22); }
+  .card.selected .card-face {
+    border-color: var(--gold) !important;
+    box-shadow: 3px 6px 0 rgba(240,165,0,0.5), 0 0 0 3px var(--gold) !important;
+  }
+  .card.selected { transform: translateY(-12px) rotate(-2deg) !important; }
+
+  /* ── PREVIEW OVERLAY ── */
+  #preview-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,20,50,0.75);
+    z-index: 400;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  #preview-overlay.show { display: flex; }
+
+  #preview-card {
+    width: 240px;
+    height: 340px;
+    position: relative;
+    perspective: 900px;
+    animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  #preview-card .card-face {
+    border-width: 4px;
+    box-shadow: 6px 8px 0 rgba(0,0,0,0.3);
+  }
+  #preview-card .card-name { font-size: 1rem !important; }
+  #preview-card .card-desc { font-size: 0.78rem !important; }
+  #preview-card .card-title-bar { padding: 8px 10px 10px; }
+
+  .preview-hint {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    color: #fff;
+    text-shadow: 1px 2px 0 rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .preview-hint span {
+    display: block;
+    font-size: 0.75rem;
+    font-family: var(--font-main);
+    color: rgba(255,255,255,0.7);
+    margin-top: 4px;
+  }
+  .btn-preview-cancel {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 30px;
+    padding: 8px 22px;
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-preview-cancel:hover { background: rgba(255,255,255,0.25); }
+
+  /* Timeline card */
+  .card.on-timeline { cursor: default; }
+
+  /* Animations */
+  @keyframes correctBounce {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.12) rotate(3deg); }
+    60%  { transform: scale(0.96) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  @keyframes wrongShake {
+    0%,100% { transform: translateX(0) rotate(0); }
+    20%  { transform: translateX(-10px) rotate(-3deg); }
+    40%  { transform: translateX(10px) rotate(3deg); }
+    60%  { transform: translateX(-6px) rotate(-1deg); }
+    80%  { transform: translateX(6px) rotate(1deg); }
+  }
+  .anim-correct .card-inner { animation: correctBounce 0.5s ease; }
+  .anim-wrong .card-inner   { animation: wrongShake 0.45s ease; }
+
+  /* ── HAND + DECK ZONE ── */
+  #hand-section {
+    padding: 14px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg);
+  }
+  .hand-label {
+    font-family: var(--font-title);
+    font-size: 1rem;
+    color: #1a3a6e;
+  }
+  #hand-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+  }
+
+  /* DECK button */
+  #deck-btn {
+    width: var(--card-w);
+    height: var(--card-h);
+    background: linear-gradient(145deg, #1a3a6e, #2b5bb8);
+    border: 3px solid var(--gold);
+    border-radius: var(--radius);
+    box-shadow: 3px 4px 0 rgba(0,0,0,0.25);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #fff;
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    transition: all 0.15s;
+  }
+  #deck-btn:hover:not(:disabled) {
+    transform: translateY(-4px);
+    box-shadow: 3px 8px 0 rgba(0,0,0,0.25);
+    background: linear-gradient(145deg, #2b5bb8, #3a7ae0);
+  }
+  #deck-btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+  }
+  #deck-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .deck-cards-icon { font-size: 2.2rem; }
+  #deck-count {
+    font-size: 0.62rem;
+    color: rgba(255,255,255,0.7);
+    font-family: var(--font-main);
+    margin-top: -4px;
+  }
+
+  /* ── FEEDBACK TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1a3a6e;
+    color: #fff;
+    border: 3px solid var(--gold);
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    z-index: 200;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap;
+    box-shadow: 3px 4px 0 rgba(0,0,0,0.2);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.good { background: var(--green); border-color: #1a8a55; }
+  #toast.bad  { background: var(--red);   border-color: #a02010; }
+
+  /* ── WIN SCREEN ── */
+  #win-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,58,110,0.92);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 30px;
+  }
+  #win-screen.show { display: flex; }
+  .win-box {
+    background: var(--surface);
+    border: 4px solid var(--gold);
+    border-radius: 20px;
+    padding: 32px 40px;
+    max-width: 380px;
+    box-shadow: 6px 8px 0 rgba(0,0,0,0.3);
+  }
+  .win-trophy { font-size: 4rem; }
+  .win-title {
+    font-family: var(--font-title);
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-top: 8px;
+  }
+  .win-score {
+    font-family: var(--font-title);
+    font-size: 4rem;
+    color: #1a3a6e;
+    line-height: 1;
+    margin: 8px 0;
+  }
+  .win-details { font-size: 0.85rem; color: var(--muted); }
+  .btn-big {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 32px;
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-bottom: 4px solid #a03310;
+    margin-top: 16px;
+    transition: all 0.15s;
+  }
+  .btn-big:hover { background: #f06030; transform: translateY(-3px); }
+  .btn-big:active { transform: translateY(1px); border-bottom-width: 1px; }
+
+  /* Divider */
+  .divider {
+    width: calc(100% - 32px);
+    max-width: 700px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="isfec-badge">ISFEC BFC</div>
+  <h1>⚡ L'Odyssée de l'IA</h1>
+  <p>Place les cartes dans le bon ordre chronologique</p>
+</header>
+
+<div id="scorebar">
+  <div class="stat-box">
+    <div class="stat-val" id="score-val">0</div>
+    <div class="stat-lbl">Points</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val green" id="placed-val">1</div>
+    <div class="stat-lbl">Placées</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-val red" id="errors-val">0</div>
+    <div class="stat-lbl">Erreurs</div>
+  </div>
+  <button class="btn-restart" onclick="initGame()">↺ Recommencer</button>
+</div>
+
+<div id="instruction-bar">Chargement du jeu…</div>
+
+<!-- TIMELINE -->
+<div id="timeline-section">
+  <div class="tl-label">— Frise chronologique —</div>
+  <div id="timeline-row"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- HAND + DECK -->
+<div id="hand-section">
+  <div class="hand-label">🃏 Ta main — <span id="hand-count">0</span> carte(s)</div>
+  <div id="hand-row"></div>
+  <div>
+    <button id="deck-btn" onclick="drawCard()">
+      <div class="deck-cards-icon">🂠</div>
+      <div>Piocher</div>
+      <div id="deck-count">… cartes</div>
+    </button>
+  </div>
+</div>
+
+<!-- PREVIEW OVERLAY -->
+<div id="preview-overlay">
+  <div class="preview-hint">
+    Voici ta carte 🔍
+    <span>Ferme pour la placer dans la frise</span>
+  </div>
+  <div id="preview-card"></div>
+  <button class="btn-preview-cancel" onclick="closePreview()">✕ Fermer et placer</button>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- WIN SCREEN -->
+<div id="win-screen">
+  <div class="win-box">
+    <div class="win-trophy">🏆</div>
+    <div class="win-title">Bravo !</div>
+    <div class="win-score" id="final-score">0</div>
+    <div class="win-details" id="final-details"></div>
+    <button class="btn-big" onclick="initGame()">Rejouer !</button>
+  </div>
+</div>
+
+<script>
+// ─── CARDS DATA ───────────────────────────────────────────────────────────────
+const CARDS = [
+  { id:1,  year:1837, name:"Ada Lovelace",                   desc:"Premier concept de programme informatique" },
+  { id:2,  year:1921, name:"Mot ROBOT",                      desc:"Création du mot ROBOT" },
+  { id:3,  year:1939, name:"Machine de Turing",              desc:"Premier concept d'algorithme — Code Enigma" },
+  { id:4,  year:1945, name:"ENIAC",                          desc:"Premier ordinateur entièrement électronique" },
+  { id:5,  year:1950, name:"Test de Turing",                 desc:"Test d'intelligence des machines" },
+  { id:6,  year:1953, name:"Margaret Masterman",             desc:"Unité de recherche linguistique de Cambridge" },
+  { id:7,  year:1954, name:"Traduction automatique",         desc:"Expérience de Georgetown (IBM)" },
+  { id:8,  year:1956, name:"Premier programme IA",           desc:"Conférence de Dartmouth — Logic Theorist" },
+  { id:9,  year:1957, name:"Neurone monocouche",             desc:"Perceptron — Apprentissage automatique" },
+  { id:10, year:1965, name:"Premier chatbot",                desc:"ELIZA — Psychothérapeute virtuel" },
+  { id:11, year:1966, name:"Shakey le robot",                desc:"Premier robot mobile intelligent (Stanford)" },
+  { id:12, year:1972, name:"Système expert Mycin",           desc:"Diagnostic médical par règles expertes" },
+  { id:13, year:1986, name:"NETtalk",                        desc:"L'ordinateur est doté d'une voix" },
+  { id:14, year:1997, name:"Deep Blue",                      desc:"Bat Kasparov aux échecs" },
+  { id:15, year:2009, name:"ImageNet",                       desc:"Création d'une banque d'images" },
+  { id:16, year:2011, name:"Siri",                           desc:"Premier assistant vocal (Apple)" },
+  { id:17, year:2012, name:"Révolution AlexNet",             desc:"Apprentissage profond conquiert l'image" },
+  { id:18, year:2013, name:"Traitement du langage naturel",  desc:"Comprendre, analyser, générer du langage humain" },
+  { id:19, year:2015, name:"Voiture autonome",               desc:"Projet Waymo — Google" },
+  { id:20, year:2015, name:"Concours reconnaissance visuel", desc:"ILSVRC — La vision IA dépasse l'humaine" },
+  { id:21, year:2016, name:"AlphaGo",                        desc:"DeepMind bat Lee Sedol au Go" },
+  { id:22, year:2018, name:"Prix Turing pour LeCun",         desc:"Apprentissage profond récompensé" },
+  { id:23, year:2022, name:"Lancement de ChatGPT",           desc:"Basé sur GPT-3.5 (OpenAI)" },
+  { id:24, year:2023, name:"IA générative",                  desc:"DALL·E, Midjourney, GPT-4" },
+  { id:25, year:2024, name:"IA Act",                         desc:"Première législation mondiale (Parlement européen)" },
+];
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let deck = [], hand = [], timeline = [];
+let selectedCard = null;
+let score = 0, errors = 0;
+let toastTimer = null;
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+function initGame() {
+  deck = shuffle([...CARDS]);
+  hand = []; timeline = [];
+  selectedCard = null;
+  score = 0; errors = 0;
+  document.getElementById('win-screen').classList.remove('show');
+  // Place first card visible on timeline
+  timeline.push(deck.shift());
+  updateUI();
+  setInstruction('Pioche une carte pour commencer ! 👇');
+}
+
+// ─── DRAW ────────────────────────────────────────────────────────────────────
+function drawCard() {
+  if (!deck.length) return;
+  if (hand.length >= 3) { showToast('Main pleine ! Place une carte d\'abord 😅', 'bad'); return; }
+  hand.push(deck.shift());
+  updateUI();
+  setInstruction('Clique sur une carte dans ta main pour la sélectionner ✋');
+  if (!deck.length) document.getElementById('deck-btn').disabled = true;
+}
+
+// ─── SELECT ──────────────────────────────────────────────────────────────────
+function selectCard(cardId) {
+  // If already selected — deselect
+  if (selectedCard === cardId) {
+    selectedCard = null;
+    renderHand();
+    activateDropZones(false);
+    setInstruction('Clique sur une carte dans ta main pour la sélectionner ✋');
+    return;
+  }
+  // Show big preview first
+  selectedCard = cardId;
+  const card = hand.find(c => c.id === cardId);
+  showPreview(card);
+}
+
+function showPreview(card) {
+  const overlay = document.getElementById('preview-overlay');
+  const container = document.getElementById('preview-card');
+  container.innerHTML = '';
+  // Build a big card (front only — no date)
+  const el = makeCard(card, false);
+  el.style.width  = '240px';
+  el.style.height = '340px';
+  el.style.minWidth = '240px';
+  container.appendChild(el);
+  overlay.classList.add('show');
+}
+
+function closePreview() {
+  document.getElementById('preview-overlay').classList.remove('show');
+  renderHand();
+  activateDropZones(true);
+  setInstruction('Clique sur un "|" dans la frise pour placer ta carte ! 👆');
+}
+
+function activateDropZones(on) {
+  document.getElementById('timeline-row').querySelectorAll('.drop-zone')
+    .forEach(dz => on ? dz.classList.add('active-zones') : dz.classList.remove('active-zones'));
+}
+
+// ─── PLACE ───────────────────────────────────────────────────────────────────
+function placeCard(insertIndex) {
+  if (!selectedCard) { showToast('Sélectionne d\'abord une carte ! 👇', 'bad'); return; }
+  const card = hand.find(c => c.id === selectedCard);
+  if (!card) return;
+
+  // Close preview if open
+  document.getElementById('preview-overlay').classList.remove('show');
+
+  const leftYear  = timeline[insertIndex - 1]?.year ?? -Infinity;
+  const rightYear = timeline[insertIndex]?.year    ??  Infinity;
+  const ok = card.year >= leftYear && card.year <= rightYear;
+
+  // Insert temporarily
+  timeline.splice(insertIndex, 0, card);
+  hand = hand.filter(c => c.id !== selectedCard);
+  selectedCard = null;
+  updateUI();
+
+  const el = document.querySelector(`.card[data-id="${card.id}"]`);
+
+  if (ok) {
+    score += 10;
+    if (el) { el.classList.add('anim-correct'); setTimeout(() => el.classList.remove('anim-correct'), 600); }
+    showToast(`✅ Bravo ! ${card.year} — ${card.name}`, 'good');
+    setInstruction('');
+    setTimeout(() => {
+      updateScore();
+      checkEnd();
+      if (deck.length) setInstruction('Pioche une nouvelle carte ! 👇');
+      else if (hand.length) setInstruction('Place tes cartes restantes ! 👆');
+    }, 700);
+  } else {
+    errors++;
+    if (el) { el.classList.add('anim-wrong'); setTimeout(() => el.classList.remove('anim-wrong'), 500); }
+    showToast(`❌ Pas tout à fait… C'était ${card.year} !`, 'bad');
+    setTimeout(() => {
+      timeline = timeline.filter(c => c.id !== card.id);
+      const pos = Math.floor(Math.random() * Math.max(1, deck.length));
+      deck.splice(pos, 0, card);
+      updateUI();
+      document.getElementById('deck-btn').disabled = false;
+      setInstruction(deck.length ? 'Pioche une carte ! 👇' : 'Place tes cartes restantes ! 👆');
+    }, 1800);
+  }
+  updateScore();
+}
+
+// ─── CHECK END ───────────────────────────────────────────────────────────────
+function checkEnd() {
+  if (!deck.length && !hand.length) {
+    setTimeout(() => {
+      document.getElementById('final-score').textContent = score + ' pts';
+      const pct = Math.round((score / (CARDS.length * 10)) * 100);
+      document.getElementById('final-details').textContent =
+        `${timeline.length} cartes placées • ${errors} erreur${errors!==1?'s':''} • ${pct}% de réussite`;
+      document.getElementById('win-screen').classList.add('show');
+    }, 800);
+  }
+}
+
+function updateUI() { renderTimeline(); renderHand(); updateScore(); }
+
+function updateScore() {
+  document.getElementById('score-val').textContent   = score;
+  document.getElementById('placed-val').textContent  = timeline.length;
+  document.getElementById('errors-val').textContent  = errors;
+  document.getElementById('deck-count').textContent  = deck.length + ' carte' + (deck.length!==1?'s':'');
+  document.getElementById('hand-count').textContent  = hand.length;
+  document.getElementById('deck-btn').disabled = !deck.length;
+}
+
+function renderTimeline() {
+  const row = document.getElementById('timeline-row');
+  row.innerHTML = '';
+  for (let i = 0; i <= timeline.length; i++) {
+    // Drop zone
+    const dz = document.createElement('div');
+    dz.className = 'drop-zone' + (selectedCard ? ' active-zones' : '');
+    const idx = i;
+    dz.addEventListener('click', () => { if (selectedCard) placeCard(idx); });
+    row.appendChild(dz);
+
+    if (i < timeline.length) {
+      const card = timeline[i];
+      const el = makeCard(card, true);
+      el.classList.add('on-timeline');
+      // First card: always visible, others too on timeline
+      if (i > 0) el.classList.add('flipped');
+      else el.classList.add('flipped');
+      row.appendChild(el);
+    }
+  }
+  setTimeout(() => { row.scrollLeft = row.scrollWidth; }, 60);
+}
+
+function renderHand() {
+  const row = document.getElementById('hand-row');
+  row.innerHTML = '';
+  hand.forEach(card => {
+    const el = makeCard(card, false);
+    el.classList.add('in-hand');
+    if (selectedCard === card.id) el.classList.add('selected');
+    el.addEventListener('click', () => selectCard(card.id));
+    row.appendChild(el);
+  });
+}
+
+function makeCard(card, showDate) {
+  const wrap = document.createElement('div');
+  wrap.className = 'card' + (showDate ? ' flipped' : '');
+  wrap.dataset.id = card.id;
+
+  const imgSrc = `images/card_${card.id}.jpg`;
+
+  wrap.innerHTML = `
+    <div class="card-inner">
+      <div class="card-face card-front">
+        <div class="card-img">
+          <img src="${imgSrc}" alt="${card.name}" loading="lazy" onerror="this.parentNode.innerHTML='<div style=\\'font-size:2.5rem;padding:10px\\'>${getEmoji(card.id)}</div>'">
+        </div>
+        <div class="card-title-bar">
+          <div class="card-name">${card.name}</div>
+          <div class="card-desc">${card.desc}</div>
+        </div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-back-star">✦</div>
+        <div class="card-year">${card.year}</div>
+        <div class="card-back-name">${card.name}</div>
+      </div>
+    </div>`;
+  return wrap;
+}
+
+// Fallback emojis if images don't load
+function getEmoji(id) {
+  const em = {1:'👩‍💻',2:'🤖',3:'⚙️',4:'🖥️',5:'🧪',6:'🔬',7:'🌐',8:'💡',9:'🧠',
+               10:'💬',11:'🦾',12:'🏥',13:'🔊',14:'♟️',15:'🖼️',16:'🎙️',17:'🌊',
+               18:'📖',19:'🚗',20:'🏆',21:'⬤',22:'🏅',23:'🤯',24:'🎨',25:'⚖️'};
+  return em[id] || '🃏';
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function setInstruction(txt, cls='') {
+  const el = document.getElementById('instruction-bar');
+  el.textContent = txt || '';
+  el.className = cls;
+}
+
+function showToast(msg, cls='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + cls;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2800);
+}
+
+// ─── START ───────────────────────────────────────────────────────────────────
+initGame();
+</script>
+</body>
+</html>
