@@ -840,7 +840,7 @@ function makeCard(card, showDate) {
   wrap.className = 'card' + (showDate ? ' flipped' : '');
   wrap.dataset.id = card.id;
 
-  const imgSrc = `images/card_${card.id}.jpg`;
+  const imgSrc = `card_${card.id}.jpg`;
 
   wrap.innerHTML = `
     <div class="card-inner">
